@@ -3,6 +3,11 @@
 // Soothing, fullscreen, elegant portfolio game settings
 // =============================================================================
 
+// Helper to determine mobile/narrow layout accurately
+export function isMobileLayout(width = typeof window !== 'undefined' ? window.innerWidth : 1024, height = typeof window !== 'undefined' ? window.innerHeight : 768) {
+  return width <= 600 || (width <= 768 && height > width);
+}
+
 export const CONFIG = {
   // ---------------------------------------------------------------------------
   // Social Profiles & Destinations
@@ -128,11 +133,14 @@ export const CONFIG = {
   // ---------------------------------------------------------------------------
   game: {
     fps: 60,
-    speed: 4.2,                  // Slightly increased starting pace (closer to comfortable cruising speed)
-    maxSpeed: 6.8,               // Preserved comfortable maximum speed ceiling
+    speed: 4.2,                  // Desktop starting pace (comfortable cruising speed)
+    mobileSpeed: 3.8,            // Relaxed, comfortable mobile starting speed for anticipation
+    maxSpeed: 6.8,               // Desktop maximum speed ceiling
+    mobileMaxSpeed: 5.8,         // Comfortable mobile maximum speed ceiling
     acceleration: 0.00012,       // Very gradual, seamless progression
     gapCoefficient: 1.2,         // Generous obstacle spacing
-    minObstacleGap: 450,         // Minimum distance in px between obstacles
+    minObstacleGap: 450,         // Minimum distance in px between obstacles on desktop
+    mobileMinObstacleGap: 280,   // Proportional minimum spacing on mobile screens
     gravity: 0.48,               // Moderately adjusted gravity for natural jump arc
     initialJumpVelocity: -8.8,   // Moderately reduced jump height for effortless feel
     dropVelocity: -4.0,

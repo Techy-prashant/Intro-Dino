@@ -3,7 +3,7 @@
 // 60 FPS, proportional scaling, soothing pacing, and continuous horizontal narrative
 // =============================================================================
 
-import { CONFIG } from './config.js';
+import { CONFIG, isMobileLayout } from './config.js';
 import { ASSETS } from './assets.js';
 import { Trex, TrexStatus } from './physics.js';
 import { ObstacleManager } from './obstacles.js';
@@ -97,10 +97,22 @@ export class GameEngine {
     this.ctx.scale(dpr, dpr);
     this.ctx.imageSmoothingEnabled = false;
 
-    // Proportional scale calculation: Comfortable, prominent, un-stretched
-    this.scale = Math.round(Math.max(1.4, Math.min(2.5, H / 380)) * 10) / 10;
     // Ground baseline sits naturally at ~72% of viewport height
     this.groundBaselineY = Math.round(H * 0.72);
+
+    // Desktop scale calculation (preserved exactly for desktop layouts)
+    const desktopScale = Math.round(Math.max(1.4, Math.min(2.5, H / 380)) * 10) / 10;
+    const isMobile = isMobileLayout(W, H);
+
+    if (isMobile) {
+      // Mobile / narrow screen: reduce gameplay scale to ~80-85% of desktop scale for spaciousness,
+      // comfort, and increased obstacle visibility while preserving crisp pixel art
+      const mobileTarget = desktopScale * 0.82;
+      const maxMobileScale = Math.min(1.75, Math.max(1.25, W / 235));
+      this.scale = Math.round(Math.min(maxMobileScale, mobileTarget) * 10) / 10;
+    } else {
+      this.scale = desktopScale;
+    }
 
     this.trex.setEnvironment(this.groundBaselineY, this.scale);
     this.obstacleManager.setEnvironment(this.groundBaselineY, this.scale);
@@ -306,7 +318,8 @@ export class GameEngine {
 
     this.score = 0;
     this.distanceRan = 0;
-    this.speed = CONFIG.game.speed;
+    const isMobile = isMobileLayout();
+    this.speed = isMobile ? (CONFIG.game.mobileSpeed || 3.8) : CONFIG.game.speed;
     this.trex.reset();
     this.obstacleManager.reset();
     this.horizon.reset();
@@ -326,6 +339,13 @@ export class GameEngine {
     }
 
     // Preserve score & restore gentle speed for that score
+    const isMobile = isMobileLayout();
+    const baseSpeed = isMobile ? (CONFIG.game.mobileSpeed || 3.8) : CONFIG.game.speed;
+    const maxSpeed = isMobile ? (CONFIG.game.mobileMaxSpeed || 5.8) : CONFIG.game.maxSpeed;
+    this.speed = Math.min(
+      maxSpeed,
+      baseSpeed + (this.distanceRan * CONFIG.game.acceleration)
+    );
     this.trex.reset();
     this.trex.startSafeWindow(CONFIG.resume.safeWindowDuration);
     this.obstacleManager.clearRunway(CONFIG.resume.obstacleClearDistance);
@@ -378,9 +398,13 @@ export class GameEngine {
       this.score = this.distanceRan * 0.025;
 
       // Gentle, soothing speed progression
+      const isMobile = isMobileLayout();
+      const baseSpeed = isMobile ? (CONFIG.game.mobileSpeed || 3.8) : CONFIG.game.speed;
+      const maxSpeed = isMobile ? (CONFIG.game.mobileMaxSpeed || 5.8) : CONFIG.game.maxSpeed;
+
       this.speed = Math.min(
-        CONFIG.game.maxSpeed,
-        CONFIG.game.speed + (this.distanceRan * CONFIG.game.acceleration)
+        maxSpeed,
+        baseSpeed + (this.distanceRan * CONFIG.game.acceleration)
       );
 
       // Day / Night cycle at 700 pt milestones

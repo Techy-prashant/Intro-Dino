@@ -3,7 +3,7 @@
 // Proportional fullscreen scaling, exact baseline alignment & buoyant jumping
 // =============================================================================
 
-import { CONFIG } from './config.js';
+import { CONFIG, isMobileLayout } from './config.js';
 import { SPRITE_DEFINITIONS, TREX_COLLISION_BOXES, TREX_SPECS, CollisionBox } from './sprites.js';
 
 export const TrexStatus = {
@@ -49,7 +49,10 @@ export class Trex {
   setEnvironment(groundBaselineY, scale) {
     this.groundBaselineY = groundBaselineY;
     this.scale = scale;
-    this.x = Math.max(70, Math.round(window.innerWidth * 0.12));
+    const isMobile = isMobileLayout();
+    const minX = isMobile ? Math.max(28, Math.round(window.innerWidth * 0.08)) : 70;
+    const xRatio = isMobile ? 0.09 : 0.12;
+    this.x = Math.max(minX, Math.round(window.innerWidth * xRatio));
 
     if (!this.jumping) {
       this.y = this.groundBaselineY - (this.specs.height * this.scale);

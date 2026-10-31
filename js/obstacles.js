@@ -3,7 +3,7 @@
 // Fullscreen scaling, exact baseline resting, generous soothing spacing
 // =============================================================================
 
-import { CONFIG } from './config.js';
+import { CONFIG, isMobileLayout } from './config.js';
 import { SPRITE_DEFINITIONS, OBSTACLE_TYPES, CollisionBox } from './sprites.js';
 
 function getRandomNum(min, max) {
@@ -25,7 +25,8 @@ export class Obstacle {
 
     this.width = this.typeConfig.width * this.size * this.scale;
     this.height = this.typeConfig.height * this.scale;
-    this.x = canvasWidth + 50;
+    const isMobile = isMobileLayout();
+    this.x = canvasWidth + (isMobile ? 60 : 50);
 
     // Y position calculated from the exact ground baseline
     if (this.type === 'pterodactyl') {
@@ -43,9 +44,11 @@ export class Obstacle {
     this.speedOffset = this.typeConfig.speedOffset || 0;
 
     // Generous, soothing gap calculation so player never feels crowded
-    const screenGap = window.innerWidth * 0.42;
-    const baseGap = Math.max(CONFIG.game.minObstacleGap, screenGap);
-    this.gap = Math.round(baseGap + getRandomNum(60, 240));
+    const screenGap = isMobile ? window.innerWidth * 0.70 : window.innerWidth * 0.42;
+    const baseGap = isMobile
+      ? Math.max(CONFIG.game.mobileMinObstacleGap || 280, screenGap)
+      : Math.max(CONFIG.game.minObstacleGap, screenGap);
+    this.gap = Math.round(baseGap + getRandomNum(isMobile ? 40 : 60, isMobile ? 140 : 240));
 
     this.followingObstacleCreated = false;
     this.remove = false;
@@ -145,7 +148,9 @@ export class ObstacleManager {
 
     // Spawn new obstacles with generous spacing
     if (this.obstacles.length === 0) {
-      this.spawnObstacle(speed);
+      const isMobile = isMobileLayout();
+      const initialLead = isMobile ? Math.max(160, Math.round(canvasWidth * 0.5)) : 0;
+      this.spawnObstacle(speed, null, initialLead);
     } else {
       const lastObstacle = this.obstacles[this.obstacles.length - 1];
       if (
@@ -158,12 +163,20 @@ export class ObstacleManager {
     }
   }
 
-  spawnObstacle(speed, forcedType = null) {
-    const availableTypes = forcedType ? [forcedType] : OBSTACLE_TYPES.filter(type => speed >= type.minSpeed);
+  spawnObstacle(speed, forcedType = null, extraLead = 0) {
+    let availableTypes = OBSTACLE_TYPES.filter(type => speed >= type.minSpeed);
+    if (forcedType) {
+      if (typeof forcedType === 'string') {
+        const match = OBSTACLE_TYPES.find(t => t.type === forcedType);
+        if (match) availableTypes = [match];
+      } else {
+        availableTypes = [forcedType];
+      }
+    }
     const chosenType = availableTypes[getRandomNum(0, availableTypes.length - 1)];
 
     const obstacle = new Obstacle(
-      window.innerWidth,
+      window.innerWidth + extraLead,
       this.groundBaselineY,
       this.scale,
       chosenType,
