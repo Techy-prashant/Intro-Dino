@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title></title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <!-- Fullscreen Game Canvas -->
+  <canvas id="game-canvas"></canvas>
+
+  <!-- Continuous Traveling Introduction Narrative -->
+  <div id="narrative-track"></div>
+
+  <!-- Discreet Mute Control -->
+  <button id="mute-btn" title="Toggle Sound (M)" aria-label="Toggle Sound"></button>
+
+  <!-- Elegant Instruction at Bottom (Initial Start) -->
+  <div id="instruction-bar">PRESS SPACEBAR TO START</div>
+
+  <!-- Game Over Screen with Background Blur & Uncluttered Layout -->
+  <div id="game-over-panel" class="game-over-panel" aria-hidden="true">
+    <div class="game-over-card">
+      <canvas id="game-over-text-canvas" class="game-over-text-canvas" aria-label="GAME OVER"></canvas>
+      <button id="game-over-retry-btn" class="game-over-retry-btn" type="button" title="Retry (Spacebar)" aria-label="Retry Game">
+        <canvas id="game-over-retry-canvas" class="game-over-retry-canvas"></canvas>
+      </button>
+      <div id="game-over-resume-label" class="game-over-resume-label">PRESS SPACEBAR TO RESUME</div>
+    </div>
+  </div>
+
+  <script src="js/qrcode.min.js"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
