@@ -1,0 +1,33 @@
+{
+  "name": "intro-dino",
+  "version": "1.0.0",
+  "description": "A personal introduction disguised as the classic Chrome Dinosaur game. Run through my story, one checkpoint at a time.",
+  "main": "index.html",
+  "scripts": {
+    "start": "node scripts/server.js",
+    "test": "node scripts/test-suite.js",
+    "capture": "node scripts/capture-docs-screenshots.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Techy-prashant/Intro-Dino.git"
+  },
+  "keywords": [
+    "chrome-dino",
+    "dinosaur-game",
+    "personal-website",
+    "interactive-portfolio",
+    "javascript",
+    "web-development",
+    "creative-coding",
+    "canvas-2d",
+    "web-audio-api"
+  ],
+  "author": "Prashant Tiwari <pt286355@gmail.com>",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/Techy-prashant/Intro-Dino/issues"
+  },
+  "homepage": "https://techy-prashant.github.io/Intro-Dino/"
+}
+

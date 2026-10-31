@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Development & Temp Files
+.gemini/
+*.log
+*.tmp
+.user_uploaded/
+.system_generated/
+
+# Chrome test & screenshot temp profiles
+chrome-test-*
+chrome-screenshots-*
+chrome-night-*
+
+# OS generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor directories
+.vscode/
+.idea/
