@@ -63,6 +63,8 @@ export class GameEngine {
     // Touch input
     this.touchStartY = 0;
     this.isTouchDucking = false;
+    this.isTouchOnInteractive = false;
+    this.ignoreTouchUntil = 0;
   }
 
   async init() {
@@ -171,10 +173,15 @@ export class GameEngine {
       this.setupResolution();
     });
 
-    // Page visibility to prevent delta-time spikes
-    document.addEventListener('visibilitychange', () => {
+    // Page visibility & focus handling (reset touch state and prevent accidental jump when returning from external profile tabs)
+    const onVisibilityOrFocusReset = () => {
       this.lastTime = performance.now();
-    });
+      this.isTouchOnInteractive = false;
+      this.isTouchDucking = false;
+      this.ignoreTouchUntil = performance.now() + 350;
+    };
+    document.addEventListener('visibilitychange', onVisibilityOrFocusReset);
+    window.addEventListener('focus', onVisibilityOrFocusReset);
 
     // Game Over Retry button & Modal click handlers
     const retryBtn = document.getElementById('game-over-retry-btn');
@@ -247,8 +254,35 @@ export class GameEngine {
     }
   }
 
+  isInteractiveTarget(target) {
+    if (!target || !(target instanceof Element)) return false;
+    return Boolean(
+      target.closest('a') ||
+      target.closest('button') ||
+      target.closest('#mute-btn') ||
+      target.closest('#game-over-panel') ||
+      target.closest('.checkpoint-image-link') ||
+      target.closest('.checkpoint-email-link') ||
+      target.closest('.checkpoint-media-wrapper') ||
+      target.closest('.social-profiles-bar') ||
+      target.closest('.social-item') ||
+      target.closest('.click-me-badge')
+    );
+  }
+
   handleTouchStart(e) {
-    if (e.target && (e.target.closest?.('#mute-btn') || e.target.closest?.('.social-profiles-bar'))) return;
+    // If returning from external link tab, ignore ghost touch for 350ms
+    if (this.ignoreTouchUntil && performance.now() < this.ignoreTouchUntil) {
+      return;
+    }
+
+    // Give clickable introduction images, links, buttons, and social bar absolute touch priority
+    if (this.isInteractiveTarget(e.target)) {
+      this.isTouchOnInteractive = true;
+      return;
+    }
+
+    this.isTouchOnInteractive = false;
     if (e.preventDefault) e.preventDefault();
 
     const touch = e.touches ? e.touches[0] : e;
@@ -267,6 +301,7 @@ export class GameEngine {
   }
 
   handleTouchMove(e) {
+    if (this.isTouchOnInteractive) return;
     if (e.preventDefault) e.preventDefault();
     if (this.state === GameState.PLAYING && e.touches && e.touches[0]) {
       const deltaY = e.touches[0].clientY - this.touchStartY;
@@ -278,6 +313,10 @@ export class GameEngine {
   }
 
   handleTouchEnd(e) {
+    if (this.isTouchOnInteractive) {
+      this.isTouchOnInteractive = false;
+      return;
+    }
     if (e.preventDefault) e.preventDefault();
     if (this.isTouchDucking) {
       this.trex.setDuck(false);

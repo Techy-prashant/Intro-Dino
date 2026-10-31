@@ -235,6 +235,20 @@ export class CheckpointManager {
       }
     }
 
+    // Ensure interactive image and email links receive clean touch events without gameplay propagation
+    const interactiveLinks = el.querySelectorAll('.checkpoint-image-link, .checkpoint-email-link');
+    interactiveLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.stopPropagation();
+      });
+      link.addEventListener('touchstart', (e) => {
+        e.stopPropagation();
+      }, { passive: true });
+      link.addEventListener('touchend', (e) => {
+        e.stopPropagation();
+      }, { passive: true });
+    });
+
     return el;
   }
 
